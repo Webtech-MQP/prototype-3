@@ -14,14 +14,12 @@ export const userRouter = createTRPCRouter({
       z.object({
         name: z.string().min(1).max(255),
         email: z.string(),
-        image: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.db.insert(users).values({
         name: input.name,
         email: input.email,
-        image: input.image,
         createdAt: new Date(),
         updatedAt: new Date(),
       });
@@ -66,13 +64,15 @@ export const userRouter = createTRPCRouter({
         id: z.string().cuid2(),
         name: z.string().min(1).max(255),
         email: z.string(),
-        image: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.db
         .update(users)
-        .set({ name: input.name, email: input.email, image: input.image })
+        .set({
+          name: input.name,
+          email: input.email,
+        })
         .where(eq(users.id, input.id));
     }),
 
