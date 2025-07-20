@@ -9,6 +9,8 @@ import {
   Settings,
   LogOut,
   Search,
+  Users,
+  FolderOpen,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -37,13 +39,32 @@ const ROUTES = [
   },
 ];
 
+const ADMIN_ROUTES = [
+  {
+    name: "Admin Dashboard",
+    href: "/dashboard/admin",
+    icon: Settings,
+  },
+  {
+    name: "User Management",
+    href: "/dashboard/admin/users",
+    icon: Users,
+  },
+  {
+    name: "Project Management",
+    href: "/dashboard/admin/projects",
+    icon: FolderOpen,
+  },
+];
+
 export function Sidebar() {
   const path = usePathname();
   const { data: session, status } = useSession();
   const [profileOpen, setProfileOpen] = useState(false);
 
   const closestMatch = useCallback(() => {
-    return ROUTES.reduce(
+    const allRoutes = [...ROUTES, ...ADMIN_ROUTES];
+    return allRoutes.reduce(
       (a, b) => {
         return path.startsWith(b.href) && b.href.length > a.href.length ? b : a;
       },
@@ -70,6 +91,28 @@ export function Sidebar() {
             {route.name}
           </Link>
         ))}
+        
+        {isAdmin && (
+          <>
+            <div className="my-4 border-t border-gray-200" />
+            <div className="mb-2 px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              Admin
+            </div>
+            {ADMIN_ROUTES.map((route) => (
+              <Link
+                key={route.name}
+                href={route.href}
+                className={cn(
+                  "hover:text-primary mb-4 flex items-center gap-3 p-4",
+                  closestMatch().href === route.href && "border-primary border-b-4",
+                )}
+              >
+                <route.icon className="h-5 w-5" />
+                {route.name}
+              </Link>
+            ))}
+          </>
+        )}
       </nav>
       <div className="mt-auto">
         <div

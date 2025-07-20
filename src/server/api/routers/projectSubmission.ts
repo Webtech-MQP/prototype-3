@@ -17,6 +17,7 @@ export const projectSubmissionRouter = createTRPCRouter({
     return ctx.db.query.projectSubmissions.findMany({
       with: {
         project: true,
+        reviewedByAdmin: true,
       },
     });
   }),
