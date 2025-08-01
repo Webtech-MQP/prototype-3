@@ -3,6 +3,7 @@ import { relations, sql } from 'drizzle-orm';
 import { primaryKey } from 'drizzle-orm/sqlite-core';
 import { createTable } from '../schema-util';
 import { adminProfiles, candidateProfiles } from './profiles';
+import { projectAward } from './awards';
 
 export const projects = createTable('project', (d) => ({
     id: d
@@ -44,6 +45,7 @@ export const projectsRelations = relations(projects, ({ one, many }) => ({
         fields: [projects.projectTimeline],
         references: [projectTimeline.id],
     }),
+    awards: many(projectAward),
 }));
 
 export const projectTimeline = createTable('project_timeline', (d) => ({

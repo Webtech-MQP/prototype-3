@@ -1,9 +1,10 @@
-import { createId } from "@paralleldrive/cuid2";
-import { sql, relations } from "drizzle-orm";
-import { createTable } from "../schema-util";
-import { candidateProfiles } from "./profiles";
+import { createId } from '@paralleldrive/cuid2';
+import { relations, sql } from 'drizzle-orm';
+import { createTable } from '../schema-util';
+import { candidateProfiles } from './profiles';
+import { projects, projectSubmissions } from './projects';
 
-export const awards = createTable("award", (d) => ({
+export const awards = createTable('award', (d) => ({
     id: d
         .text()
         .$defaultFn(() => createId())
@@ -11,15 +12,15 @@ export const awards = createTable("award", (d) => ({
     title: d.text({ length: 256 }).notNull(),
     description: d.text({ length: 1000 }),
     imageURL: d.text({ length: 255 }).notNull(),
-    category: d.text({ length: 64 }), // e.g. 'achievement', 'participation'
-    issuedAt: d.integer({ mode: "timestamp" }),
-    issuerType: d.text({ enum: ["internal", "external"] }).default("internal"),
-    issuerName: d.text({ length: 256 }), // e.g., "Microsoft", "Google", "Hackathon 2024"
-    isActive: d.integer({ mode: "boolean" }).default(true),
-    createdAt: d.integer({ mode: "timestamp" }).default(sql`(unixepoch())`),
+    createdAt: d.integer({ mode: 'timestamp' }).default(sql`(unixepoch())`),
 }));
 
-export const candidateAwards = createTable("candidate_award", (d) => ({
+export const awardsRelations = relations(awards, ({ many }) => ({
+    candidateAward: many(candidateAward),
+    projects: many(projectAward),
+}));
+
+export const candidateAward = createTable('candidate_award', (d) => ({
     id: d
         .text()
         .$defaultFn(() => createId())
@@ -27,28 +28,51 @@ export const candidateAwards = createTable("candidate_award", (d) => ({
     userId: d
         .text()
         .notNull()
-        .references(() => candidateProfiles.userId, { onDelete: "cascade" }),
+        .references(() => candidateProfiles.userId, { onDelete: 'cascade' }),
     awardId: d
         .text()
         .notNull()
-        .references(() => awards.id, { onDelete: "cascade" }),
-    earnedAt: d.integer({ mode: "timestamp" }).default(sql`(unixepoch())`),
+        .references(() => awards.id, { onDelete: 'cascade' }),
+    projectSubmissionId: d.text({ length: 255 }).references(() => projectSubmissions.id, { onDelete: 'set null' }),
+    earnedAt: d.integer({ mode: 'timestamp' }).default(sql`(unixepoch())`),
     displayOrder: d.integer().default(0),
-    isVisible: d.integer({ mode: "boolean" }).default(true),
+    isVisible: d.integer({ mode: 'boolean' }).default(true),
 }));
 
-export const awardsRelations = relations(awards, ({ many }) => ({
-    candidateAwards: many(candidateAwards),
-}));
-
-export const candidateAwardsRelations = relations(candidateAwards, ({ one }) => ({
+export const candidateAwardRelations = relations(candidateAward, ({ one }) => ({
     candidate: one(candidateProfiles, {
-      fields: [candidateAwards.userId],
-      references: [candidateProfiles.userId],
+        fields: [candidateAward.userId],
+        references: [candidateProfiles.userId],
     }),
     award: one(awards, {
-      fields: [candidateAwards.awardId],
-      references: [awards.id],
+        fields: [candidateAward.awardId],
+        references: [awards.id],
     }),
+    projectSubmission: one(projectSubmissions, {
+        fields: [candidateAward.projectSubmissionId],
+        references: [projectSubmissions.id],
+    }),
+}));
+
+
+export const projectAward = createTable('projects_awards', (d) => ({
+  projectId: d
+    .text('project_id')
+    .notNull()
+    .references(() => projects.id, { onDelete: 'cascade' }),
+  awardId: d
+    .text('award_id')
+    .notNull()
+    .references(() => awards.id, { onDelete: 'cascade' }),
+}));
+
+export const projectAwardRelations = relations(projectAward, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectAward.projectId],
+    references: [projects.id],
   }),
-);
+  award: one(awards, {
+    fields: [projectAward.awardId],
+    references: [awards.id],
+  }),
+}));

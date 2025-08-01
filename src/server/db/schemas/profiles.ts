@@ -3,6 +3,7 @@ import { relations, sql } from 'drizzle-orm';
 import { primaryKey } from 'drizzle-orm/sqlite-core';
 import { createTable } from '../schema-util';
 import { users } from './auth';
+import { candidateAward } from './awards';
 import { candidateProfilesToProjects } from './projects';
 
 export const candidateProfiles = createTable('candidate_profile', (d) => ({
@@ -38,6 +39,7 @@ export const candidateProfilesRelations = relations(candidateProfiles, ({ one, m
     }),
     candidateProfilesToProjects: many(candidateProfilesToProjects),
     reports: many(candidateReport),
+    awards: many(candidateAward),
 }));
 
 export const recruiterProfiles = createTable('recruiter_profile', (d) => ({

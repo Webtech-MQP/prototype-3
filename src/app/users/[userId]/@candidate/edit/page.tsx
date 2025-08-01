@@ -2,6 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/features/profiles/editor/input';
+import { AwardEditor, type AwardEditorHandle } from '@/features/profiles/editor/award-editor';
 import { cn } from '@/lib/utils';
 import { api } from '@/trpc/react';
 import { useForm } from '@tanstack/react-form';
@@ -9,6 +10,7 @@ import { EyeIcon, EyeOffIcon, HandIcon, LinkedinIcon, LoaderCircle } from 'lucid
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
+import { useRef } from 'react';
 
 export default function Page() {
     const { userId: encodedUserId } = useParams();
@@ -23,7 +25,6 @@ export default function Page() {
 
     const updateCandidate = api.candidates.updateMe.useMutation({
         onSuccess: () => {
-            router.push(`/users/${userId}`);
             // What in the eslint
             void utils.candidates.getOne.invalidate({ id: userId });
         },
@@ -55,6 +56,20 @@ export default function Page() {
     });
 
     const { data: candidate, error, isLoading } = api.candidates.getOne.useQuery(userId.startsWith('@') ? { githubUsername: userId.slice(1) } : { id: userId });
+    
+    const awardEditorRef = useRef<AwardEditorHandle>(null);
+
+    const handleSaveAll = async () => {
+        try {
+            await form.handleSubmit();
+            if (awardEditorRef.current?.hasChanges) {
+                await awardEditorRef.current.saveChanges();
+            }
+            router.push(`/users/${userId}`);
+        } catch (err) {
+            console.error('Error during save:', err);
+        }
+    };
 
     const form = useForm({
         defaultValues: {
@@ -152,13 +167,24 @@ export default function Page() {
                                     />
                                 )}
                             </form.Field>
+                            
+                            {/* Awards Section */}
+                            <AwardEditor
+                                ref={awardEditorRef}
+                                userId={userId}
+                                className="max-w-xl"
+                            />
+
                             <Button
-                                onClick={() => form.handleSubmit()}
-                                type="submit"
+                                onClick={handleSaveAll}
+                                type="button"
                                 variant="outline"
+                                disabled={updateCandidate.isPending}
                             >
-                                {updateCandidate.isPending && <LoaderCircle className="animate-spin" />}
-                                Save
+                                {updateCandidate.isPending && (
+                                    <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                                )}
+                                Save All
                             </Button>
                         </form>
                     </div>

@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { AwardsSection } from '@/features/profiles/awards/awards-section';
 import { JamGrid } from '@/features/profiles/jam-grid';
 import { auth } from '@/server/auth';
 import { api } from '@/trpc/server';
@@ -28,6 +29,10 @@ export default async function Page({ params }: Props) {
     }
 
     const projects = await api.candidates.getProjects({
+        userId: candidate.userId,
+    });
+
+    const userAwards = await api.awards.getVisibleUserAwards({
         userId: candidate.userId,
     });
 
@@ -64,27 +69,40 @@ export default async function Page({ params }: Props) {
                             height={100}
                             width={100}
                         />
-                        <h1 className="mt-2 font-bold">{candidate.displayName}</h1>
-                        <p>{candidate.bio}</p>
-                        <div className="flex gap-2">
-                            {candidate.linkedinURL && (
-                                <Link
-                                    target="_blank"
-                                    href={candidate.linkedinURL}
-                                    className="hover:text-primary mt-4 flex items-center gap-2 hover:underline"
-                                >
-                                    <LinkedinIcon className="h-6 w-6" />{' '}
-                                </Link>
-                            )}
-                            {candidate.user.githubUsername && (
-                                <Link
-                                    target="_blank"
-                                    href={`https://github.com/${candidate.user.githubUsername}`}
-                                    className="hover:text-primary mt-4 flex items-center gap-2 hover:underline"
-                                >
-                                    <GithubIcon className="h-6 w-6" />{' '}
-                                </Link>
-                            )}
+                        <div className="flex items-start gap-4">
+                            <div className="flex-1">
+                                <h1 className="mt-2 font-bold">{candidate.displayName}</h1>
+                                <p>{candidate.bio}</p>
+                                <div className="flex gap-2">
+                                    {candidate.linkedinURL && (
+                                        <Link
+                                            target="_blank"
+                                            href={candidate.linkedinURL}
+                                            className="hover:text-primary mt-4 flex items-center gap-2 hover:underline"
+                                        >
+                                            <LinkedinIcon className="h-6 w-6" />{' '}
+                                        </Link>
+                                    )}
+                                    {candidate.user.githubUsername && (
+                                        <Link
+                                            target="_blank"
+                                            href={`https://github.com/${candidate.user.githubUsername}`}
+                                            className="hover:text-primary mt-4 flex items-center gap-2 hover:underline"
+                                        >
+                                            <GithubIcon className="h-6 w-6" />{' '}
+                                        </Link>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Awards Section */}
+                            <div className="shrink-0">
+                                <AwardsSection
+                                    awards={userAwards}
+                                    title="Achievements"
+                                    size="sm"
+                                />
+                            </div>
                         </div>
                     </div>
                     <div>
