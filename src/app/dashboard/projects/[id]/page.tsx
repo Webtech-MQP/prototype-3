@@ -4,8 +4,6 @@ import { GanttChart } from '@/features/time-tracking/components/gantt-chart';
 import { api } from '@/trpc/server';
 import { Clock, ExternalLink, Users } from 'lucide-react';
 import Image from 'next/image';
-// import { CommitChart } from "@/features/github-integration/components/commit-chart";
-// import { DeploymentChart } from "@/features/aws-integration/components/deployment-chart";
 import { UserActionsMenu } from '@/components/user-actions-menu';
 import { auth } from '@/server/auth';
 import { redirect } from 'next/navigation';
@@ -19,20 +17,20 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
 
     const { id } = await params;
 
-    const project = await api.projects.getOne({ id });
+    const projectInstance = await api.projectInstances.getOne({ id });
 
-    if (!project) return <div>Not found!</div>;
+    if (!projectInstance) return <div>Not found!</div>;
 
     return (
         <div className="flex flex-col gap-2 p-4">
             <DashboardCard>
-                <h1>{project.title}</h1>
+                <h1>{projectInstance.project.title}</h1>
                 <div className="flex gap-2">
                     <Badge className="bg-indigo-500">
-                        <Users /> {project.projectsToCandidateProfiles.length} members
+                        <Users /> {projectInstance.teamMembers.length} members
                     </Badge>
                     <Badge className="bg-indigo-500">
-                        <Clock /> {project.deadline?.toLocaleDateString()}
+                        <Clock /> {projectInstance.project.deadline?.toLocaleDateString()}
                     </Badge>
                 </div>
                 <div className="relative flex w-full gap-4">
@@ -106,7 +104,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
             <DashboardCard>
                 <h1>Teammates</h1>
                 <div className="relative flex w-full flex-col gap-4">
-                    {project.projectsToCandidateProfiles.map((projectCandidate, index) => (
+                    {projectInstance.teamMembers.map((projectCandidate, index) => (
                         <div
                             key={index}
                             className="flex items-center gap-2"
