@@ -83,7 +83,7 @@ export const projectEventRelations = relations(projectEvent, ({ one }) => ({
     }),
 }));
 
-export const projectSubmissions = createTable('projectSubmission', (d) => ({
+export const projectSubmissions = createTable('project_submission', (d) => ({
     id: d
         .text()
         .$defaultFn(() => createId())
