@@ -49,11 +49,6 @@ export const projectRouter = createTRPCRouter({
         return ctx.db.query.projects.findFirst({
             where: (projects, { eq }) => eq(projects.id, input.id),
             with: {
-                projectsToCandidateProfiles: {
-                    with: {
-                        candidateProfile: true,
-                    },
-                },
                 projectsToTags: {
                     with: {
                         tag: true,
@@ -67,11 +62,6 @@ export const projectRouter = createTRPCRouter({
     getAll: publicProcedure.query(async ({ ctx }) => {
         return ctx.db.query.projects.findMany({
             with: {
-                projectsToCandidateProfiles: {
-                    with: {
-                        candidateProfile: true,
-                    },
-                },
                 projectsToTags: {
                     with: {
                         tag: true,
@@ -158,11 +148,6 @@ export const projectRouter = createTRPCRouter({
                     return and(...conditions);
                 },
                 with: {
-                    projectsToCandidateProfiles: {
-                        with: {
-                            candidateProfile: true,
-                        },
-                    },
                     projectsToTags: {
                         with: {
                             tag: true,
@@ -172,7 +157,7 @@ export const projectRouter = createTRPCRouter({
             });
 
             return q.filter((p) => {
-                if (input.groupSize && p.projectsToCandidateProfiles.length !== input.groupSize) {
+                if (input.groupSize && p.numberOfMembers !== input.groupSize) {
                     return false;
                 }
                 if (!input.tags || input.tags.length === 0) return true;
